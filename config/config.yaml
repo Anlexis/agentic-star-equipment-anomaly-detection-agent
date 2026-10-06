@@ -1,0 +1,35 @@
+# Runtime parameters — loaded and passed as Graph(config=...).
+# Separate from config/agent.yaml (the flat registration manifest, which carries
+# no runtime block; a runtime value placed there is read by nothing).
+
+# Backbone retry budget: read by AgentBaseGraph.route().
+max_retry: 3
+
+# Per-invoke timeout budget. Recognised by the framework configuration contract;
+# this template calls no external service, so nothing here consumes it today.
+timeout_s: 30
+
+# Sensor-window ingestion.
+ingestion:
+  # Sensors with fewer readings than this are still summarised, but the
+  # shortfall is recorded. 1-100000. (SensorDataIngestionNode)
+  min_samples: 3
+
+# Equipment baseline profiles.
+baseline:
+  # Directory holding per-equipment "<equipment_id>.json" profiles. When no file
+  # is found the node falls back to its built-in profiles. (BaselineLoadNode)
+  path: "baselines/"
+
+# Anomaly scoring and classification. Every value is validated (type,
+# finiteness, range) before it is forwarded to the inner graph; an invalid entry
+# is dropped and the consuming node keeps its documented default.
+anomaly:
+  warning_threshold: 0.4   # 0.0-1.0    (AnomalyDetectionNode)
+  alert_threshold: 0.7     # 0.0-1.0    (AnomalyDetectionNode)
+  zscore_saturation: 4.0   # 0.1-1000.0 (StatisticalAnalysisNode)
+
+security:
+  # Records that the output boundary is active. PostProcessNode runs it
+  # unconditionally — this key states the posture, it does not switch it.
+  s3_gate_enabled: true
